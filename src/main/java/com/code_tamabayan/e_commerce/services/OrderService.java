@@ -1,10 +1,14 @@
 package com.code_tamabayan.e_commerce.services;
 
+import java.util.Objects;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.code_tamabayan.e_commerce.dto.CartAndOrderRequestDto;
+import com.code_tamabayan.e_commerce.dto.OrderRequestDto;
+import com.code_tamabayan.e_commerce.dto.ResponseDto;
+import com.code_tamabayan.e_commerce.entities.Cart;
 import com.code_tamabayan.e_commerce.entities.Order;
 import com.code_tamabayan.e_commerce.entities.Product;
 import com.code_tamabayan.e_commerce.repositories.OrderRepository;
@@ -22,22 +26,37 @@ public class OrderService {
         this.cartService = cartService;
     }
 
-    // pag order na kasi multiple na
-    public Order addNewOrder(CartAndOrderRequestDto cartAndOrderRequestDto) {
-        Product product = productService.getProductById(cartAndOrderRequestDto.getProductId());
+    public ResponseDto addNewOrder(OrderRequestDto orderRequestDto) {
+        ResponseDto response = new ResponseDto();
 
-        if (product == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not found");
+        try {
+
+            for (Long productId : orderRequestDto.getProductIdList()) {
+                Product product = productService.getProductById(productId);
+
+                if (Objects.isNull(product)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not found");
+                }
+
+                Cart cart = cartService.getCartItemByProduct(product);
+
+                Order order = new Order();
+                order.setProduct(cart.getProduct());
+                order.setQuantity(cart.getQuantity());
+                order.setPricePerProduct(cart.getPricePerProduct());
+                orderRepository.save(order);
+
+                cartService.deleteProductsInCartByProductId(product.getId());
+
+                productService.subtractOrderQuantityToProduct(productId,
+                        cart.getQuantity());
+            }
+
+            response.setMessage("Successfully ordered the products.");
+            return response;
+        } catch (Exception e) {
+            response.setMessage("Error happen while ordering products: " + e.getMessage());
+            return response;
         }
-
-        cartService.deleteProductsInCartByProductId(cartAndOrderRequestDto.getProductId());
-
-        Order order = new Order();
-        order.setProduct(product);
-
-        productService.subtractOrderQuantityToProduct(cartAndOrderRequestDto.getProductId(),
-                cartAndOrderRequestDto.getQuantity());
-
-        return orderRepository.save(null);
     }
 }

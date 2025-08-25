@@ -8,9 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.code_tamabayan.e_commerce.dto.CartAndOrderRequestDto;
+import com.code_tamabayan.e_commerce.dto.CartRequestDto;
 import com.code_tamabayan.e_commerce.dto.ResponseDto;
-import com.code_tamabayan.e_commerce.entities.Cart;
 import com.code_tamabayan.e_commerce.services.CartService;
 
 @RestController
@@ -24,7 +23,7 @@ public class CartController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Cart> addToCart(@RequestBody CartAndOrderRequestDto cartAndOrderRequestDto) {
+    public ResponseEntity<ResponseDto> addToCart(@RequestBody CartRequestDto cartAndOrderRequestDto) {
         return ResponseEntity.ok(cartService.addToCart(cartAndOrderRequestDto));
     }
 
