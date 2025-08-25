@@ -1,5 +1,7 @@
 package com.code_tamabayan.e_commerce.repositories;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -8,5 +10,5 @@ import com.code_tamabayan.e_commerce.entities.Product;
 
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
-    void deleteByProduct(Product product);
+    List<Cart> findByProduct(Product product);
 }

@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.code_tamabayan.e_commerce.dto.CartAndOrderRequestDto;
 import com.code_tamabayan.e_commerce.entities.Order;
 import com.code_tamabayan.e_commerce.entities.Product;
 import com.code_tamabayan.e_commerce.repositories.OrderRepository;
@@ -21,19 +22,22 @@ public class OrderService {
         this.cartService = cartService;
     }
 
-    public Order addNewOrder(Long productId) {
-        Product product = productService.getProductById(productId);
+    // pag order na kasi multiple na
+    public Order addNewOrder(CartAndOrderRequestDto cartAndOrderRequestDto) {
+        Product product = productService.getProductById(cartAndOrderRequestDto.getProductId());
 
         if (product == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product not found");
         }
 
-        cartService.removeProductInCartByProductId(productId);
+        cartService.deleteProductsInCartByProductId(cartAndOrderRequestDto.getProductId());
 
         Order order = new Order();
         order.setProduct(product);
 
-        productService.subtractOrderQuantityToProduct(productId, null);
+        productService.subtractOrderQuantityToProduct(cartAndOrderRequestDto.getProductId(),
+                cartAndOrderRequestDto.getQuantity());
+
         return orderRepository.save(null);
     }
 }
